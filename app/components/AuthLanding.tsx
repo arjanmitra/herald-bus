@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useAuth } from './shared/AuthContext';
-import Message from './shared/Message';
 import '../styles.css';
 
 export default function AuthLanding() {
@@ -36,6 +35,10 @@ export default function AuthLanding() {
   return (
     <>
       <div className="auth-container">
+        <header className="auth-header">
+          <h1>Herald</h1>
+        </header>
+
         <main className="auth-main">
           <div className="auth-card">
             <h2>{mode === 'signin' ? 'Sign In' : 'Create Account'}</h2>
@@ -45,72 +48,90 @@ export default function AuthLanding() {
                 : 'Create an account to save and manage your extractions'}
             </p>
 
-            <Message 
-              message={message}
-              type={messageType}
-              onClose={() => { setMessage(''); setMessageType(''); }}
-            />
+            {message && (
+              <div className={`auth-message ${messageType}`}>
+                {message}
+              </div>
+            )}
 
             <div className="auth-form-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email" className="auth-label">Email Address</label>
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
+                onKeyPress={(e) => e.key === 'Enter' && submit()}
+                placeholder="you@example.com"
                 disabled={loading}
-                onKeyDown={(e) => e.key === 'Enter' && submit()}
+                className="auth-input"
               />
             </div>
 
             <div className="auth-form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password" className="auth-label">Password</label>
               <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                onKeyPress={(e) => e.key === 'Enter' && submit()}
+                placeholder="••••••••"
                 disabled={loading}
-                onKeyDown={(e) => e.key === 'Enter' && submit()}
+                className="auth-input"
               />
             </div>
 
+            <div className="auth-mode-toggle">
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('signin');
+                  setMessage('');
+                }}
+                disabled={loading}
+                className={`auth-mode-btn ${mode === 'signin' ? 'active' : ''}`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('signup');
+                  setMessage('');
+                }}
+                disabled={loading}
+                className={`auth-mode-btn ${mode === 'signup' ? 'active' : ''}`}
+              >
+                Create Account
+              </button>
+            </div>
+
             <button
-              className="auth-button"
+              type="button"
               onClick={submit}
               disabled={loading || !email.trim() || !password.trim()}
+              className="auth-submit-btn"
             >
-              {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
+              {loading ? (
+                <span className="auth-spinner">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10" strokeWidth="2" opacity="0.25" />
+                    <path d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" fill="currentColor" opacity="0.75" />
+                  </svg>
+                  Please wait…
+                </span>
+              ) : mode === 'signin' ? (
+                'Sign In'
+              ) : (
+                'Create Account'
+              )}
             </button>
 
-            <div className="auth-toggle">
-              {mode === 'signin' ? (
-                <>
-                  Don't have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setMode('signup')}
-                    className="auth-link"
-                    disabled={loading}
-                  >
-                    Create one
-                  </button>
-                </>
-              ) : (
-                <>
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setMode('signin')}
-                    className="auth-link"
-                    disabled={loading}
-                  >
-                    Sign in
-                  </button>
-                </>
-              )}
+            <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '13px', color: '#999' }}>
+              {mode === 'signin'
+                ? "Don't have an account? Click the 'Create Account' tab above"
+                : 'Already have an account? Click the \'Sign In\' tab above'}
             </div>
           </div>
         </main>

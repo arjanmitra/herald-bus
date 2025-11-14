@@ -113,35 +113,38 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
     if (loading) {
         return (
-            <div className="card">
-                <h2>Loading Extraction Results...</h2>
-                <p>Please wait while we fetch your extraction data.</p>
+            <div className="upload-container">
+                <div className="card">
+                    <h2>Loading Extraction Results...</h2>
+                    <p>Please wait while we fetch your extraction data.</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="card">
-            <Message 
-                message={message}
-                type={messageType}
-                onClose={() => { setMessage(''); setMessageType(''); }}
-            />
+        <div className="upload-container">
+            <div className="card">
+                <Message 
+                    message={message}
+                    type={messageType}
+                    onClose={() => { setMessage(''); setMessageType(''); }}
+                />
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
-                <div>
-                    <h2 style={{ marginTop: 0 }}>Extraction Results</h2>
-                    <div style={{ fontSize: '14px', color: '#999', marginTop: '5px' }}>
-                        File: {filename}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
+                    <div>
+                        <h2 style={{ marginTop: 0 }}>Extraction Results</h2>
+                        <div style={{ fontSize: '14px', color: '#999', marginTop: '5px' }}>
+                            File: {filename}
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#999', marginTop: '5px' }}>
+                            Status: <StatusBadge status={extractionStatus === 'available' ? 'Extracted' : 'Extraction Pending'} />
+                        </div>
                     </div>
-                    <div style={{ fontSize: '14px', color: '#999', marginTop: '5px' }}>
-                        Status: <StatusBadge status={extractionStatus === 'available' ? 'Extracted' : 'Extraction Pending'} />
-                    </div>
+                    <button onClick={handleCheckExtraction} disabled={checking} className="btn btn-secondary">
+                        {checking ? 'Checking...' : 'Check Status'}
+                    </button>
                 </div>
-                <button onClick={handleCheckExtraction} disabled={checking} className="btn btn-secondary">
-                    {checking ? 'Checking...' : 'Check Status'}
-                </button>
-            </div>
 
             {riskData.length > 0 && (
                 <div className="table-section">
@@ -189,6 +192,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                     Extract Another Document
                 </Link>
             </div>
+        </div>
         </div>
     );
 }
