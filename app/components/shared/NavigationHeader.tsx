@@ -19,8 +19,13 @@ export default function NavigationHeader() {
             color: 'white',
             padding: '20px 30px',
             boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
-            position: 'sticky',
+            width: '100vw',
+            position: 'relative',
             top: 0,
+            left: 0,
+            right: 0,
+            margin: 0,
+            boxSizing: 'border-box',
             zIndex: 100
         }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

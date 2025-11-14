@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AuthProvider } from "./components/shared/AuthContext";
 import UserMenu from "./components/shared/UserMenu";
 import NavigationHeader from "./components/shared/NavigationHeader";
+import ContentWrapper from "./components/shared/ContentWrapper";
 import "./globals.css";
 import "./styles.css";
 
@@ -25,8 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} antialiased`}>
+    <html lang="en" style={{ margin: 0, padding: 0 }}>
+      <body className={`${inter.variable} antialiased`} style={{ margin: 0, padding: 0, overflow: 'auto' }}>
         <AuthProvider>
           <NavigationHeader />
           <div style={{
@@ -34,9 +35,9 @@ export default function RootLayout({
             background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
             fontFamily: '-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif'
           }}>
-            <div className="main-content">
+            <ContentWrapper>
               {children}
-            </div>
+            </ContentWrapper>
           </div>
         </AuthProvider>
       </body>
