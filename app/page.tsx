@@ -1,9 +1,5 @@
-import AuthLanding from './components/AuthLanding'
+import { redirect } from 'next/navigation';
 
 export default function Page() {
-  return (
-    <main>
-      <AuthLanding />
-    </main>
-  )
+  redirect('/upload');
 }
