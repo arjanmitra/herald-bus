@@ -31,11 +31,11 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     const handleCheckExtraction = async () => {
         if (checking) return;
         setChecking(true);
-        
+
         try {
             const resp = await fetch(`/api/extract?id=${heraldFileId}`);
             const json = await resp.json();
-            
+
             if (resp.ok) {
                 setExtractionResult(json.extraction ?? json);
                 setMessage('Extraction status updated');
@@ -57,7 +57,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
         if (downloadingExcel) return;
         const extractionData = extractionResult?.data_extraction || extractionResult;
         if (!extractionData) return setMessage('No extraction data available'), setMessageType('error');
-        
+
         setDownloadingExcel(true);
         try {
             const resp = await fetch('/api/export', {
@@ -65,7 +65,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'download', extractionData })
             });
-            
+
             if (resp.ok) {
                 const blob = await resp.blob();
                 const url = window.URL.createObjectURL(blob);
@@ -113,49 +113,46 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
     if (loading) {
         return (
-            <div className="upload-container">
-                <div className="card">
-                    <h2>Loading Extraction Results...</h2>
-                    <p>Please wait while we fetch your extraction data.</p>
-                </div>
+            <div className="card">
+                <h2>Loading Extraction Results...</h2>
+                <p>Please wait while we fetch your extraction data.</p>
             </div>
         );
     }
 
     return (
-        <div className="upload-container">
-            <div className="card">
-                <Message 
-                    message={message}
-                    type={messageType}
-                    onClose={() => { setMessage(''); setMessageType(''); }}
-                />
+        <div className="card">
+            <Message
+                message={message}
+                type={messageType}
+                onClose={() => { setMessage(''); setMessageType(''); }}
+            />
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
-                    <div>
-                        <h2 style={{ marginTop: 0 }}>Extraction Results</h2>
-                        <div style={{ fontSize: '14px', color: '#999', marginTop: '5px' }}>
-                            File: {filename}
-                        </div>
-                        <div style={{ fontSize: '14px', color: '#999', marginTop: '5px' }}>
-                            Status: <StatusBadge status={extractionStatus === 'available' ? 'Extracted' : 'Extraction Pending'} />
-                        </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
+                <div>
+                    <h2 style={{ marginTop: 0 }}>Extraction Results</h2>
+                    <div style={{ fontSize: '14px', color: '#999', marginTop: '5px' }}>
+                        File: {filename}
                     </div>
-                    <button onClick={handleCheckExtraction} disabled={checking} className="btn btn-secondary">
-                        {checking ? 'Checking...' : 'Check Status'}
-                    </button>
+                    <div style={{ fontSize: '14px', color: '#999', marginTop: '5px' }}>
+                        Status: <StatusBadge status={extractionStatus === 'available' ? 'Extracted' : 'Extraction Pending'} />
+                    </div>
                 </div>
+                <button onClick={handleCheckExtraction} disabled={checking} className="btn btn-secondary">
+                    {checking ? 'Checking...' : 'Check Status'}
+                </button>
+            </div>
 
             {riskData.length > 0 && (
                 <div className="table-section">
                     <h3>Risk Parameters</h3>
                     <div className="ag-theme-quartz" style={{ height: '300px' }}>
-                        <AgGridReact 
-                            columnDefs={riskColumnDefs} 
-                            rowData={riskData} 
-                            pagination 
-                            paginationPageSize={10} 
-                            domLayout="autoHeight" 
+                        <AgGridReact
+                            columnDefs={riskColumnDefs}
+                            rowData={riskData}
+                            pagination
+                            paginationPageSize={10}
+                            domLayout="autoHeight"
                         />
                     </div>
                 </div>
@@ -165,12 +162,12 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                 <div className="table-section">
                     <h3>Coverage Parameters</h3>
                     <div className="ag-theme-quartz" style={{ height: '300px' }}>
-                        <AgGridReact 
-                            columnDefs={coverageColumnDefs} 
-                            rowData={coverageData} 
-                            pagination 
-                            paginationPageSize={10} 
-                            domLayout="autoHeight" 
+                        <AgGridReact
+                            columnDefs={coverageColumnDefs}
+                            rowData={coverageData}
+                            pagination
+                            paginationPageSize={10}
+                            domLayout="autoHeight"
                         />
                     </div>
                 </div>
@@ -192,7 +189,6 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                     Extract Another Document
                 </Link>
             </div>
-        </div>
         </div>
     );
 }

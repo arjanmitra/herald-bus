@@ -14,21 +14,33 @@ export default function NavigationHeader() {
     }
 
     return (
-        <div className="upload-container">
-            <header className="header">
-                <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-                        <Link href="/upload" style={{ textDecoration: 'none', color: 'inherit' }}>
-                            <h1 style={{ cursor: 'pointer', margin: 0 }}>Herald</h1>
-                        </Link>
-                        <nav style={{ display: 'flex', gap: '20px' }}>
-                            <Link href="/upload" style={{ color: '#666', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Upload</Link>
-                            <Link href="/history" style={{ color: '#666', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>History</Link>
-                        </nav>
-                    </div>
-                    <UserMenu />
+        <div style={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            padding: '20px 30px',
+            boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 100
+        }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+                    <Link href="/upload" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <h1 style={{
+                            cursor: 'pointer',
+                            margin: 0,
+                            fontSize: '30px',
+                            fontWeight: 300,
+                            letterSpacing: '-0.5px'
+                        }}>Herald</h1>
+                    </Link>
+                    <nav style={{ display: 'flex', gap: '20px' }}>
+                        <Link href="/upload" style={{ color: 'rgba(255,255,255,0.9)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Upload</Link>
+                        <Link href="/history" style={{ color: 'rgba(255,255,255,0.9)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>History</Link>
+                    </nav>
                 </div>
-            </header>
+                <UserMenu />
+            </div>
         </div>
     );
 }

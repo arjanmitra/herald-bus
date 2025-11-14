@@ -29,8 +29,14 @@ export default function RootLayout({
       <body className={`${inter.variable} antialiased`}>
         <AuthProvider>
           <NavigationHeader />
-          <div className="main-content">
-            {children}
+          <div style={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            fontFamily: '-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif'
+          }}>
+            <div className="main-content">
+              {children}
+            </div>
           </div>
         </AuthProvider>
       </body>
