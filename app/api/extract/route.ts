@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { findSessionById, getUserUploadHistory, updateUploadMetadata } from '../../../lib/db';
 
 export async function GET(request: NextRequest) {
     try {
@@ -28,6 +29,32 @@ export async function GET(request: NextRequest) {
         if (!heraldResp.ok) {
             console.error('Herald check extraction error:', heraldData);
             return NextResponse.json({ error: 'Check extraction failed', details: heraldData }, { status: heraldResp.status });
+        }
+
+        // If extraction is complete, update the database record
+        if (heraldData.status === 'available') {
+            try {
+                const sessionId = request.cookies.get('session')?.value;
+                if (sessionId) {
+                    const session = await findSessionById(sessionId);
+                    if (session) {
+                        // Find the upload record by herald file id and update metadata
+                        const userHistory = await getUserUploadHistory(session.user_id);
+                        const uploadRecord = userHistory.find(h => h.herald_file_id === heraldData.file?.id);
+                        if (uploadRecord) {
+                            const updatedMetadata = {
+                                ...uploadRecord.metadata,
+                                data_extraction: heraldData
+                            };
+                            await updateUploadMetadata(uploadRecord.id, updatedMetadata);
+                            console.log('[extract] Updated database with extraction results for:', uploadRecord.filename);
+                        }
+                    }
+                }
+            } catch (dbError) {
+                console.error('[extract] Failed to update database:', dbError);
+                // Don't fail the request if DB update fails
+            }
         }
 
         return NextResponse.json({ success: true, extraction: heraldData }, { status: 200 });
@@ -66,6 +93,30 @@ export async function POST(request: NextRequest) {
         if (!heraldResp.ok) {
             console.error('Herald extraction error:', heraldData);
             return NextResponse.json({ error: 'Herald extraction failed', details: heraldData }, { status: heraldResp.status });
+        }
+
+        // Save extraction results to database immediately
+        try {
+            const sessionId = request.cookies.get('session')?.value;
+            if (sessionId) {
+                const session = await findSessionById(sessionId);
+                if (session) {
+                    // Find the upload record by herald file id and update metadata
+                    const userHistory = await getUserUploadHistory(session.user_id);
+                    const uploadRecord = userHistory.find(h => h.herald_file_id === fileId);
+                    if (uploadRecord) {
+                        const updatedMetadata = {
+                            ...uploadRecord.metadata,
+                            data_extraction: heraldData
+                        };
+                        await updateUploadMetadata(uploadRecord.id, updatedMetadata);
+                        console.log('[extract] Updated database with extraction initiation for:', uploadRecord.filename);
+                    }
+                }
+            }
+        } catch (dbError) {
+            console.error('[extract] Failed to update database:', dbError);
+            // Don't fail the request if DB update fails
         }
 
         return NextResponse.json({ success: true, extraction: heraldData }, { status: 200 });

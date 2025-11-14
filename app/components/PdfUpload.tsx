@@ -36,62 +36,31 @@ const styles = `
     padding: 40px 20px;
   }
   
-  .steps-container {
-    display: flex;
-    justify-content: center;
-    gap: 60px;
-    margin-bottom: 50px;
-  }
-  
-  .step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    opacity: 0.4;
-    transition: opacity 0.3s ease;
-  }
-  
-  .step.active {
-    opacity: 1;
-  }
-  
-  .step-number {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  }
-  
-  .step.active .step-number {
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-    transform: scale(1.05);
-  }
-  
-  .step-label {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: #555;
-  }
-  
-  .step.active .step-label {
-    color: #667eea;
-  }
-  
   .message {
     padding: 15px 20px;
     border-radius: 8px;
     margin-bottom: 30px;
     font-size: 14px;
     font-weight: 500;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .message-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 15px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+  
+  .message-close:hover {
+    opacity: 1;
   }
   
   .message.success {
@@ -370,6 +339,13 @@ const styles = `
   .ag-theme-quartz {
     font-family: inherit;
     --ag-font-size: 13px;
+    --ag-row-height: 50px;
+    --ag-header-height: 40px;
+  }
+  
+  .ag-theme-quartz .ag-cell {
+    display: flex;
+    align-items: center;
   }
 `;
 
@@ -388,6 +364,17 @@ export default function PdfUpload() {
 
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
+
+    // Auto-clear messages after 5 seconds
+    useEffect(() => {
+        if (message) {
+            const timer = setTimeout(() => {
+                setMessage('');
+                setMessageType('');
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [message]);
 
     const [user, setUser] = useState<any>(null);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -566,27 +553,32 @@ export default function PdfUpload() {
 
     // Auth helpers
     const fetchMe = async () => {
+        console.log('🔍 [DEBUG] fetchMe called');
         try {
             const resp = await fetch('/api/auth/me');
             const json = await resp.json();
-            console.log('fetchMe response:', json);
+            console.log('🔍 [DEBUG] fetchMe response:', json);
             if (json?.authenticated) {
                 setUser(json.user);
-                console.log('User set:', json.user);
+                console.log('✅ [DEBUG] User set:', json.user);
             } else {
                 setUser(null);
-                console.log('User not authenticated');
+                console.log('❌ [DEBUG] User not authenticated');
             }
         } catch (err) {
-            console.error('fetchMe error:', err);
+            console.error('❌ [DEBUG] fetchMe error:', err);
             setUser(null);
         }
     };
 
     const signin = async () => {
+        console.log('🔑 [DEBUG] signin called with email:', authEmail);
         try {
             const resp = await fetch('/api/auth/signin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: authEmail, password: authPassword }) });
+            console.log('🔑 [DEBUG] signin response status:', resp.status);
             if (resp.ok) {
+                const json = await resp.json();
+                console.log('🔑 [DEBUG] signin success:', json);
                 await fetchMe();
                 await fetchHistory();
                 setAuthMode(null);
@@ -596,11 +588,12 @@ export default function PdfUpload() {
                 setMessageType('success');
             } else {
                 const json = await resp.json();
+                console.log('❌ [DEBUG] signin failed:', json);
                 setMessage(json?.error || 'Sign in failed');
                 setMessageType('error');
             }
         } catch (err) {
-            console.error(err);
+            console.error('❌ [DEBUG] signin error:', err);
             setMessage('Sign in failed');
             setMessageType('error');
         }
@@ -639,15 +632,24 @@ export default function PdfUpload() {
     };
 
     const fetchHistory = async () => {
+        console.log('📋 [DEBUG] fetchHistory called');
         setLoadingHistory(true);
         try {
             const resp = await fetch('/api/history');
+            console.log('📋 [DEBUG] fetchHistory response status:', resp.status);
             if (resp.ok) {
                 const json = await resp.json();
+                console.log('📋 [DEBUG] fetchHistory data:', json);
                 setHistory(json.history || []);
-            } else setHistory([]);
+                console.log('📋 [DEBUG] History set, length:', json.history?.length || 0);
+            } else {
+                console.log('❌ [DEBUG] fetchHistory failed with status:', resp.status);
+                const errorText = await resp.text();
+                console.log('❌ [DEBUG] fetchHistory error:', errorText);
+                setHistory([]);
+            }
         } catch (err) {
-            console.error(err);
+            console.error('❌ [DEBUG] fetchHistory error:', err);
             setHistory([]);
         } finally {
             setLoadingHistory(false);
@@ -706,29 +708,81 @@ export default function PdfUpload() {
     };
 
     const ActionsCellRenderer = (props: any) => {
+        const row = props.data;
+        const isExtracted = row.status === 'Extracted';
+
+        const handleDownloadExcel = async (e: React.MouseEvent) => {
+            e.stopPropagation();
+            if (downloadingExcel) return;
+            const extractionData = row.metadata?.data_extraction || row.metadata;
+            if (!extractionData) return;
+            setDownloadingExcel(true);
+            try {
+                const resp = await fetch('/api/export', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'download', extractionData })
+                });
+                if (resp.ok) {
+                    const blob = await resp.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${row.filename.replace('.pdf', '')}-extraction.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                }
+            } catch (err) {
+                console.error('Download failed:', err);
+            } finally {
+                setDownloadingExcel(false);
+            }
+        };
+
         return (
-            <button
-                onClick={() => {
-                    const row = props.data;
-                    if (row) {
-                        setResponseData({ filename: row.filename, heraldFileId: row.heraldFileId });
-                        setExtractionResult(row.metadata || null);
-                        setCurrentStep(row.metadata ? 'result' : 'extract');
-                    }
-                }}
-                style={{
-                    padding: '6px 14px',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                }}
-            >
-                Load
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                    onClick={() => {
+                        if (row) {
+                            setResponseData({ filename: row.filename, heraldFileId: row.heraldFileId });
+                            setExtractionResult(row.metadata || null);
+                            setCurrentStep(row.metadata ? 'result' : 'extract');
+                        }
+                    }}
+                    style={{
+                        padding: '6px 14px',
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                    }}
+                >
+                    Load
+                </button>
+                {isExtracted && (
+                    <button
+                        onClick={handleDownloadExcel}
+                        disabled={downloadingExcel}
+                        style={{
+                            padding: '6px 12px',
+                            background: downloadingExcel ? '#ccc' : '#28a745',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: downloadingExcel ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        {downloadingExcel ? 'Downloading...' : 'Excel'}
+                    </button>
+                )}
+            </div>
         );
     };
 
@@ -742,7 +796,12 @@ export default function PdfUpload() {
             <div className="upload-container">
                 <header className="header">
                     <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h1>Herald</h1>
+                        <h1
+                            onClick={() => setCurrentStep('upload')}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            Herald
+                        </h1>
                         <div ref={badgeRef} className="user-menu">
                             {user ? (
                                 <>
@@ -762,18 +821,20 @@ export default function PdfUpload() {
                 </header>
 
                 <div className="main-content">
-                    <div className="steps-container">
-                        {[{ label: 'Upload', key: 'upload' }, { label: 'Extract', key: 'extract' }, { label: 'Review', key: 'result' }].map((s, i) => (
-                            <div key={s.key} className={`step ${currentStep === s.key ? 'active' : ''}`}>
-                                <div className="step-number">{i + 1}</div>
-                                <div className="step-label">{s.label}</div>
-                            </div>
-                        ))}
-                    </div>
 
                     {message && (
                         <div className={`message ${messageType}`}>
-                            {message}
+                            <span>{message}</span>
+                            <button
+                                className="message-close"
+                                onClick={() => {
+                                    setMessage('');
+                                    setMessageType('');
+                                }}
+                                aria-label="Close message"
+                            >
+                                ×
+                            </button>
                         </div>
                     )}
 
@@ -824,10 +885,27 @@ export default function PdfUpload() {
                                                 rowData={history.map((h) => {
                                                     const hasExtraction = h.metadata?.data_extraction || h.metadata?.extraction;
                                                     const extractionStatus = h.metadata?.data_extraction?.status || h.metadata?.extraction?.status || h.metadata?.status;
+                                                    console.log('🔍 [DEBUG] Processing history item:', {
+                                                        filename: h.filename,
+                                                        hasExtraction: !!hasExtraction,
+                                                        extractionStatus,
+                                                        metadata: h.metadata,
+                                                        metadataKeys: Object.keys(h.metadata || {}),
+                                                        dataExtraction: h.metadata?.data_extraction,
+                                                        extraction: h.metadata?.extraction
+                                                    });
                                                     let status = 'Uploaded';
                                                     if (hasExtraction) {
-                                                        status = extractionStatus === 'available' ? 'Extracted' : 'Extraction Pending';
+                                                        if (extractionStatus === 'available') {
+                                                            status = 'Extracted';
+                                                        } else if (extractionStatus === 'pending' || extractionStatus === 'processing') {
+                                                            status = 'Extraction Pending';
+                                                        } else {
+                                                            // If extraction exists but status is unknown, assume pending
+                                                            status = 'Extraction Pending';
+                                                        }
                                                     }
+                                                    console.log('🔍 [DEBUG] Final status for', h.filename, ':', status);
                                                     return {
                                                         id: h.id,
                                                         filename: h.filename,
@@ -837,6 +915,7 @@ export default function PdfUpload() {
                                                         status
                                                     };
                                                 })}
+                                                rowHeight={50}
                                                 domLayout="autoHeight"
                                             />
                                         </div>

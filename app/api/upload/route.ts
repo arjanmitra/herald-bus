@@ -67,28 +67,46 @@ export async function POST(request: NextRequest) {
         // If user is authenticated, save metadata to DB
         try {
             const sessionId = request.cookies.get('session')?.value;
-            if (sessionId) {
+            if (!sessionId) {
+                console.log('[upload] no session cookie, skipping history record');
+            } else {
                 const session = await findSessionById(sessionId);
-                if (session) {
+                if (!session) {
+                    console.log('[upload] session not found or expired', sessionId);
+                } else {
                     const uploadId = nanoid();
-                    await createUploadHistory(
-                        uploadId,
-                        session.user_id,
-                        file.name,
-                        heraldData.id || heraldData.fileId,
-                        heraldData
-                    );
+                    // Extract Herald file ID from the response structure
+                    const heraldFileId = heraldData.file?.id || heraldData.id || heraldData.fileId;
+                    console.log('[upload] Herald data structure:', JSON.stringify(heraldData, null, 2));
+                    console.log('[upload] Extracted heraldFileId:', heraldFileId);
+
+                    if (!heraldFileId) {
+                        console.log('[upload] No Herald file ID found in response');
+                    } else {
+                        const row = await createUploadHistory(
+                            uploadId,
+                            session.user_id,
+                            file.name,
+                            heraldFileId,
+                            heraldData
+                        );
+                        if (row) {
+                            console.log('[upload] recorded upload', { uploadId, user: session.user_id, heraldFileId });
+                        } else {
+                            console.log('[upload] failed to insert history row');
+                        }
+                    }
                 }
             }
         } catch (e) {
-            console.error('Failed to record upload in DB', e);
+            console.error('[upload] Failed to record upload in DB', e);
         }
 
         return NextResponse.json(
             {
                 success: true,
                 filename: file.name,
-                heraldFileId: heraldData.id || heraldData.fileId,
+                heraldFileId: heraldData.file?.id || heraldData.id || heraldData.fileId,
                 message: 'PDF uploaded to Herald successfully',
                 heraldData: heraldData
             },
