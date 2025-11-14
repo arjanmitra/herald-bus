@@ -9,11 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@vercel/postgres": "^0.10.0",
     "ag-grid-community": "^34.3.1",
     "ag-grid-react": "^34.3.1",
     "bcryptjs": "^3.0.3",
     "exceljs": "^4.4.0",
-    "lowdb": "^7.0.1",
     "nanoid": "^5.1.6",
     "next": "16.0.3",
     "nodemailer": "^7.0.10",

@@ -569,10 +569,16 @@ export default function PdfUpload() {
         try {
             const resp = await fetch('/api/auth/me');
             const json = await resp.json();
-            if (json?.authenticated) setUser(json.user);
-            else setUser(null);
+            console.log('fetchMe response:', json);
+            if (json?.authenticated) {
+                setUser(json.user);
+                console.log('User set:', json.user);
+            } else {
+                setUser(null);
+                console.log('User not authenticated');
+            }
         } catch (err) {
-            console.error(err);
+            console.error('fetchMe error:', err);
             setUser(null);
         }
     };
@@ -685,14 +691,14 @@ export default function PdfUpload() {
             'Extracted': '#2e7d32'
         };
         return (
-            <span style={{ 
-                display: 'inline-block', 
-                padding: '4px 10px', 
-                borderRadius: '12px', 
-                fontSize: '11px', 
-                fontWeight: 600, 
-                background: colors[status] || '#f0f0f0', 
-                color: textColors[status] || '#666' 
+            <span style={{
+                display: 'inline-block',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                fontSize: '11px',
+                fontWeight: 600,
+                background: colors[status] || '#f0f0f0',
+                color: textColors[status] || '#666'
             }}>
                 {status}
             </span>
@@ -701,7 +707,7 @@ export default function PdfUpload() {
 
     const ActionsCellRenderer = (props: any) => {
         return (
-            <button 
+            <button
                 onClick={() => {
                     const row = props.data;
                     if (row) {
@@ -802,17 +808,17 @@ export default function PdfUpload() {
                                                     { field: 'createdAt', headerName: 'Uploaded', valueFormatter: (p: any) => new Date(p.value).toLocaleString(), flex: 1 },
                                                     { field: 'filename', headerName: 'File Name', flex: 2 },
                                                     { field: 'heraldFileId', headerName: 'Herald File ID', flex: 2 },
-                                                    { 
-                                                        field: 'status', 
-                                                        headerName: 'Status', 
+                                                    {
+                                                        field: 'status',
+                                                        headerName: 'Status',
                                                         flex: 1,
                                                         cellRenderer: StatusCellRenderer
                                                     },
-                                                    { 
-                                                        colId: 'actions', 
-                                                        headerName: 'Actions', 
-                                                        cellRenderer: ActionsCellRenderer, 
-                                                        flex: 1 
+                                                    {
+                                                        colId: 'actions',
+                                                        headerName: 'Actions',
+                                                        cellRenderer: ActionsCellRenderer,
+                                                        flex: 1
                                                     },
                                                 ]}
                                                 rowData={history.map((h) => {
@@ -822,11 +828,11 @@ export default function PdfUpload() {
                                                     if (hasExtraction) {
                                                         status = extractionStatus === 'available' ? 'Extracted' : 'Extraction Pending';
                                                     }
-                                                    return { 
-                                                        id: h.id, 
-                                                        filename: h.filename, 
-                                                        heraldFileId: h.heraldFileId, 
-                                                        createdAt: h.createdAt, 
+                                                    return {
+                                                        id: h.id,
+                                                        filename: h.filename,
+                                                        heraldFileId: h.heraldFileId,
+                                                        createdAt: h.createdAt,
                                                         metadata: h.metadata,
                                                         status
                                                     };

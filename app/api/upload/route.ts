@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import getDB from '../../../lib/db';
+import { findSessionById, createUploadHistory } from '../../../lib/db';
 import { nanoid } from 'nanoid';
 
 export async function POST(request: NextRequest) {
@@ -66,25 +66,22 @@ export async function POST(request: NextRequest) {
 
         // If user is authenticated, save metadata to DB
         try {
-            const token = request.cookies.get('session')?.value;
-            if (token) {
-                const db = await getDB();
-                const session = db.data!.sessions.find((s: any) => s.token === token);
+            const sessionId = request.cookies.get('session')?.value;
+            if (sessionId) {
+                const session = await findSessionById(sessionId);
                 if (session) {
-                    const extractionId = nanoid();
-                    db.data!.extractions.push({
-                        id: extractionId,
-                        userId: session.userId,
-                        filename: file.name,
-                        heraldFileId: heraldData.id || heraldData.fileId,
-                        createdAt: new Date().toISOString(),
-                        metadata: heraldData,
-                    });
-                    await db.write();
+                    const uploadId = nanoid();
+                    await createUploadHistory(
+                        uploadId,
+                        session.user_id,
+                        file.name,
+                        heraldData.id || heraldData.fileId,
+                        heraldData
+                    );
                 }
             }
         } catch (e) {
-            console.error('Failed to record extraction in DB', e);
+            console.error('Failed to record upload in DB', e);
         }
 
         return NextResponse.json(
@@ -105,3 +102,4 @@ export async function POST(request: NextRequest) {
         );
     }
 }
+
