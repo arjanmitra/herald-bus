@@ -21,8 +21,8 @@ const styles = `
   
   .auth-header h1 {
     margin: 0;
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 30px;
+    font-weight: 400;
     letter-spacing: -0.5px;
   }
   
@@ -36,7 +36,7 @@ const styles = `
   
   .auth-card {
     background: white;
-    border-radius: 12px;
+    border-radius: 20px;
     padding: 40px;
     max-width: 450px;
     width: 100%;
@@ -47,7 +47,7 @@ const styles = `
   .auth-card h2 {
     margin: 0 0 10px 0;
     font-size: 28px;
-    font-weight: 700;
+    font-weight: 400;
     color: #333;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
@@ -64,7 +64,7 @@ const styles = `
   
   .auth-message {
     padding: 15px;
-    border-radius: 8px;
+    border-radius: 15px;
     margin-bottom: 20px;
     font-size: 13px;
     font-weight: 500;
@@ -100,7 +100,7 @@ const styles = `
     width: 100%;
     padding: 12px 16px;
     border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 20px;
     font-size: 14px;
     box-sizing: border-box;
     transition: all 0.3s ease;
@@ -125,7 +125,7 @@ const styles = `
     gap: 8px;
     background: #f1f5f9;
     padding: 8px;
-    border-radius: 8px;
+    border-radius: 20px;
     margin-bottom: 25px;
   }
   
@@ -133,7 +133,7 @@ const styles = `
     flex: 1;
     padding: 12px 16px;
     border: none;
-    border-radius: 6px;
+    border-radius: 15px;
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
@@ -159,7 +159,7 @@ const styles = `
     width: 100%;
     padding: 14px 20px;
     border: none;
-    border-radius: 8px;
+    border-radius: 25px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     font-size: 14px;

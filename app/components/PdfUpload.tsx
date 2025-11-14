@@ -25,8 +25,8 @@ const styles = `
   
   .header h1 {
     margin: 0;
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 30px;
+    font-weight: 300;
     letter-spacing: -0.5px;
   }
   
@@ -38,7 +38,7 @@ const styles = `
   
   .message {
     padding: 15px 20px;
-    border-radius: 8px;
+    border-radius: 15px;
     margin-bottom: 30px;
     font-size: 14px;
     font-weight: 500;
@@ -77,7 +77,7 @@ const styles = `
   
   .card {
     background: white;
-    border-radius: 12px;
+    border-radius: 20px;
     padding: 40px;
     margin-bottom: 30px;
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
@@ -86,7 +86,7 @@ const styles = `
   .card h2 {
     margin: 0 0 30px 0;
     font-size: 28px;
-    font-weight: 700;
+    font-weight: 400;
     color: #333;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
@@ -96,7 +96,7 @@ const styles = `
   
   .upload-area {
     border: 2px dashed #d1d5db;
-    border-radius: 10px;
+    border-radius: 20px;
     padding: 40px 30px;
     text-align: center;
     background: #fafafa;
@@ -130,14 +130,14 @@ const styles = `
   .button-container {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 20px;
     margin-bottom: 30px;
   }
   
   .btn {
     padding: 12px 30px;
-    border-radius: 8px;
+    border-radius: 25px;
     border: none;
     font-size: 14px;
     font-weight: 600;
@@ -189,7 +189,7 @@ const styles = `
   .file-info {
     background: #f9f9f9;
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 15px;
     margin-bottom: 30px;
     border-left: 4px solid #667eea;
   }
@@ -253,7 +253,7 @@ const styles = `
   
   .modal {
     background: white;
-    border-radius: 12px;
+    border-radius: 20px;
     padding: 40px;
     max-width: 500px;
     width: 90%;
@@ -271,7 +271,7 @@ const styles = `
     width: 100%;
     padding: 12px 16px;
     border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 20px;
     font-size: 14px;
     margin-bottom: 30px;
     box-sizing: border-box;
@@ -307,7 +307,7 @@ const styles = `
     top: 50px;
     right: 0;
     background: white;
-    border-radius: 8px;
+    border-radius: 15px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     padding: 15px;
     min-width: 250px;
@@ -331,7 +331,7 @@ const styles = `
     background: #dc3545;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 15px;
     font-weight: 600;
     cursor: pointer;
   }
@@ -388,6 +388,9 @@ export default function PdfUpload() {
     const [emailRecipient, setEmailRecipient] = useState('');
     const [sendingEmail, setSendingEmail] = useState(false);
     const [downloadingExcel, setDownloadingExcel] = useState(false);
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteItem, setDeleteItem] = useState<any>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const f = e.target.files?.[0];
@@ -453,6 +456,8 @@ export default function PdfUpload() {
                 setMessage('Extraction initiated');
                 setMessageType('success');
                 setCurrentStep('result');
+                // Refresh history to show updated status
+                await fetchHistory();
             } else {
                 setMessage(json?.error || 'Extraction error');
                 setMessageType('error');
@@ -478,6 +483,8 @@ export default function PdfUpload() {
                 setExtractionResult(json.extraction ?? json);
                 setMessage('Extraction status updated');
                 setMessageType('success');
+                // Refresh history to show updated status
+                await fetchHistory();
             } else {
                 setMessage(json?.error || 'Check failed');
                 setMessageType('error');
@@ -548,6 +555,32 @@ export default function PdfUpload() {
             setMessageType('error');
         } finally {
             setSendingEmail(false);
+        }
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteItem) return;
+
+        try {
+            const resp = await fetch(`/api/history/delete?id=${deleteItem.id}`, {
+                method: 'DELETE'
+            });
+            const json = await resp.json();
+            if (resp.ok) {
+                setMessage('Upload deleted successfully');
+                setMessageType('success');
+                await fetchHistory(); // Refresh the history list
+            } else {
+                setMessage(json?.error || 'Delete failed');
+                setMessageType('error');
+            }
+        } catch (err) {
+            console.error('Delete failed:', err);
+            setMessage('Delete failed');
+            setMessageType('error');
+        } finally {
+            setShowDeleteModal(false);
+            setDeleteItem(null);
         }
     };
 
@@ -695,12 +728,13 @@ export default function PdfUpload() {
         return (
             <span style={{
                 display: 'inline-block',
-                padding: '4px 10px',
-                borderRadius: '12px',
-                fontSize: '11px',
+                padding: '2px 8px',
+                borderRadius: '15px',
+                fontSize: '10px',
                 fontWeight: 600,
                 background: colors[status] || '#f0f0f0',
-                color: textColors[status] || '#666'
+                color: textColors[status] || '#666',
+                lineHeight: '1.2'
             }}>
                 {status}
             </span>
@@ -710,6 +744,13 @@ export default function PdfUpload() {
     const ActionsCellRenderer = (props: any) => {
         const row = props.data;
         const isExtracted = row.status === 'Extracted';
+
+        console.log('🎯 [DEBUG] ActionsCellRenderer row data:', {
+            filename: row.filename,
+            status: row.status,
+            extractionStatus: row.extractionStatus,
+            metadata: row.metadata
+        });
 
         const handleDownloadExcel = async (e: React.MouseEvent) => {
             e.stopPropagation();
@@ -741,52 +782,110 @@ export default function PdfUpload() {
             }
         };
 
+        const handleDelete = async (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setDeleteItem(row);
+            setShowDeleteModal(true);
+        };
+
         return (
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '6px' }}>
                 <button
                     onClick={() => {
                         if (row) {
+                            console.log('🎯 [DEBUG] Load button clicked, navigating based on status:', row.extractionStatus);
                             setResponseData({ filename: row.filename, heraldFileId: row.heraldFileId });
-                            setExtractionResult(row.metadata || null);
-                            setCurrentStep(row.metadata ? 'result' : 'extract');
+
+                            // Navigate to correct screen based on extraction status
+                            switch (row.extractionStatus) {
+                                case 'uploaded':
+                                    console.log('🎯 [DEBUG] Going to extract screen (uploaded)');
+                                    setExtractionResult(null);
+                                    setCurrentStep('extract');
+                                    break;
+                                case 'extraction_started':
+                                    console.log('🎯 [DEBUG] Going to result screen for status check (extraction_started)');
+                                    setExtractionResult(row.metadata?.data_extraction || null);
+                                    setCurrentStep('result');
+                                    break;
+                                case 'extraction_complete':
+                                    console.log('🎯 [DEBUG] Going to result screen with data (extraction_complete)');
+                                    setExtractionResult(row.metadata?.data_extraction || null);
+                                    setCurrentStep('result');
+                                    break;
+                                default:
+                                    console.log('🎯 [DEBUG] Default: going to extract screen');
+                                    setExtractionResult(null);
+                                    setCurrentStep('extract');
+                            }
                         }
                     }}
                     style={{
-                        padding: '6px 14px',
+                        padding: '4px 8px',
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '6px',
+                        borderRadius: '15px',
                         fontSize: '12px',
                         fontWeight: 600,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        lineHeight: '1.2',
+                        display: 'flex',
+                        alignItems: 'center'
                     }}
+                    title="Open extraction"
                 >
-                    Load
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 18l6-6-6-6" />
+                    </svg>
                 </button>
                 {isExtracted && (
                     <button
                         onClick={handleDownloadExcel}
                         disabled={downloadingExcel}
                         style={{
-                            padding: '6px 12px',
+                            padding: '4px 8px',
                             background: downloadingExcel ? '#ccc' : '#28a745',
                             color: 'white',
                             border: 'none',
-                            borderRadius: '6px',
-                            fontSize: '12px',
+                            borderRadius: '15px',
+                            fontSize: '10px',
                             fontWeight: 600,
-                            cursor: downloadingExcel ? 'not-allowed' : 'pointer'
+                            cursor: downloadingExcel ? 'not-allowed' : 'pointer',
+                            lineHeight: '1.2',
+                            display: 'flex',
+                            alignItems: 'center'
                         }}
+                        title="Download Excel file"
                     >
-                        {downloadingExcel ? 'Downloading...' : 'Excel'}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14,2 14,8 20,8" />
+                            <line x1="16" y1="13" x2="8" y2="21" />
+                            <line x1="8" y1="13" x2="16" y2="21" />
+                        </svg>
                     </button>
                 )}
+                <button
+                    onClick={handleDelete}
+                    style={{
+                        padding: '4px 6px',
+                        background: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        lineHeight: '1'
+                    }}
+                    title="Delete extraction"
+                >
+                    ×
+                </button>
             </div>
         );
-    };
-
-    const riskData = extractionResult?.data_extraction?.risk_values || extractionResult?.risk_values || [];
+    }; const riskData = extractionResult?.data_extraction?.risk_values || extractionResult?.risk_values || [];
     const coverageData = extractionResult?.data_extraction?.coverage_values || extractionResult?.coverage_values || [];
     const extractionStatus = extractionResult?.data_extraction?.status || extractionResult?.status || 'unknown';
 
@@ -883,28 +982,32 @@ export default function PdfUpload() {
                                                     },
                                                 ]}
                                                 rowData={history.map((h) => {
-                                                    const hasExtraction = h.metadata?.data_extraction || h.metadata?.extraction;
-                                                    const extractionStatus = h.metadata?.data_extraction?.status || h.metadata?.extraction?.status || h.metadata?.status;
+                                                    const extractionStatus = h.metadata?.extraction_status ||
+                                                        (h.metadata?.data_extraction ? 'extraction_complete' : 'uploaded');
                                                     console.log('🔍 [DEBUG] Processing history item:', {
                                                         filename: h.filename,
-                                                        hasExtraction: !!hasExtraction,
                                                         extractionStatus,
                                                         metadata: h.metadata,
                                                         metadataKeys: Object.keys(h.metadata || {}),
                                                         dataExtraction: h.metadata?.data_extraction,
                                                         extraction: h.metadata?.extraction
                                                     });
+
                                                     let status = 'Uploaded';
-                                                    if (hasExtraction) {
-                                                        if (extractionStatus === 'available') {
+                                                    switch (extractionStatus) {
+                                                        case 'uploaded':
+                                                            status = 'Uploaded';
+                                                            break;
+                                                        case 'extraction_started':
+                                                            status = 'Extraction Pending';
+                                                            break;
+                                                        case 'extraction_complete':
                                                             status = 'Extracted';
-                                                        } else if (extractionStatus === 'pending' || extractionStatus === 'processing') {
-                                                            status = 'Extraction Pending';
-                                                        } else {
-                                                            // If extraction exists but status is unknown, assume pending
-                                                            status = 'Extraction Pending';
-                                                        }
+                                                            break;
+                                                        default:
+                                                            status = 'Uploaded';
                                                     }
+
                                                     console.log('🔍 [DEBUG] Final status for', h.filename, ':', status);
                                                     return {
                                                         id: h.id,
@@ -912,7 +1015,8 @@ export default function PdfUpload() {
                                                         heraldFileId: h.heraldFileId,
                                                         createdAt: h.createdAt,
                                                         metadata: h.metadata,
-                                                        status
+                                                        status,
+                                                        extractionStatus
                                                     };
                                                 })}
                                                 rowHeight={50}
@@ -993,15 +1097,19 @@ export default function PdfUpload() {
                             )}
 
                             <div className="button-container" style={{ marginTop: '40px' }}>
-                                <button onClick={handleDownloadExcel} disabled={!extractionResult || downloadingExcel} className="btn btn-primary">
-                                    {downloadingExcel ? 'Downloading...' : 'Download Excel'}
-                                </button>
-                                {/* <button onClick={() => setShowEmailModal(true)} disabled={!extractionResult} className="btn btn-primary">
-                                    Send via Email
-                                </button> */}
-                                <button onClick={() => setCurrentStep('upload')} className="btn btn-secondary">
-                                    Extract Another Document
-                                </button>
+                                {(riskData.length > 0 || coverageData.length > 0) && (
+                                    <>
+                                        <button onClick={handleDownloadExcel} disabled={!extractionResult || downloadingExcel} className="btn btn-primary">
+                                            {downloadingExcel ? 'Downloading...' : 'Download Excel'}
+                                        </button>
+                                        {/* <button onClick={() => setShowEmailModal(true)} disabled={!extractionResult} className="btn btn-primary">
+                                            Send via Email
+                                        </button> */}
+                                        <button onClick={() => setCurrentStep('upload')} className="btn btn-secondary">
+                                            Extract Another Document
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     )}
@@ -1015,6 +1123,25 @@ export default function PdfUpload() {
                                     <button onClick={() => setShowEmailModal(false)} className="btn btn-secondary">Cancel</button>
                                     <button onClick={handleSendEmail} disabled={sendingEmail || !emailRecipient.trim()} className="btn btn-primary">
                                         {sendingEmail ? 'Sending...' : 'Send Email'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showDeleteModal && (
+                        <div className="modal-overlay">
+                            <div className="modal">
+                                <h3>Delete Extraction</h3>
+                                <p style={{ margin: '20px 0', color: '#666' }}>
+                                    Are you sure you want to delete <strong>"{deleteItem?.filename}"</strong>?
+                                    <br />
+                                    This action cannot be undone.
+                                </p>
+                                <div className="modal-actions">
+                                    <button onClick={() => { setShowDeleteModal(false); setDeleteItem(null); }} className="btn btn-secondary">Cancel</button>
+                                    <button onClick={confirmDelete} className="btn" style={{ background: '#dc3545', color: 'white' }}>
+                                        Delete
                                     </button>
                                 </div>
                             </div>

@@ -88,7 +88,10 @@ export async function POST(request: NextRequest) {
                             session.user_id,
                             file.name,
                             heraldFileId,
-                            heraldData
+                            {
+                                ...heraldData,
+                                extraction_status: 'uploaded'
+                            }
                         );
                         if (row) {
                             console.log('[upload] recorded upload', { uploadId, user: session.user_id, heraldFileId });
