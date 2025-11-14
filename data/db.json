@@ -1,0 +1,80 @@
+{
+  "users": [
+    {
+      "id": "jTjoIbDDlJD53iZRJY6s-",
+      "email": "arjanmitra@hotmail.com",
+      "passwordHash": "$2b$10$3lbx8lysm3ITSXoVI24D1.drr6CkjJ/RVQTKbE1nk5yddLOQtgNYK"
+    }
+  ],
+  "extractions": [
+    {
+      "id": "JVqOLS-oApEj4R7-bz8ww",
+      "userId": "jTjoIbDDlJD53iZRJY6s-",
+      "filename": "AtBay2020-1.pdf",
+      "createdAt": "2025-11-14T00:42:23.980Z",
+      "metadata": {
+        "file": {
+          "id": "a87621c2-cfff-4209-a167-b5c96d6dd196",
+          "type": null,
+          "format": "pdf",
+          "file_name": "a87621c2-cfff-4209-a167-b5c96d6dd196.pdf",
+          "text": "",
+          "created_at": "2025-11-14",
+          "size": 1822479,
+          "status": "available",
+          "associations": null
+        }
+      }
+    },
+    {
+      "id": "JDYfnkLLe-FjYl8ZWA0wv",
+      "userId": "jTjoIbDDlJD53iZRJY6s-",
+      "filename": "AtBay2020-1.pdf",
+      "createdAt": "2025-11-14T15:10:30.233Z",
+      "metadata": {
+        "file": {
+          "id": "e88d7893-067c-4347-a156-bc9027764c77",
+          "type": null,
+          "format": "pdf",
+          "file_name": "e88d7893-067c-4347-a156-bc9027764c77.pdf",
+          "text": "",
+          "created_at": "2025-11-14",
+          "size": 1822479,
+          "status": "available",
+          "associations": null
+        }
+      }
+    },
+    {
+      "id": "W0rcKUZl6OJnOW0g5t5Dg",
+      "userId": "jTjoIbDDlJD53iZRJY6s-",
+      "filename": "AtBay2020-1.pdf",
+      "createdAt": "2025-11-14T15:13:03.952Z",
+      "metadata": {
+        "file": {
+          "id": "e4377665-a2d4-43bb-877c-595b682e2ec0",
+          "type": null,
+          "format": "pdf",
+          "file_name": "e4377665-a2d4-43bb-877c-595b682e2ec0.pdf",
+          "text": "",
+          "created_at": "2025-11-14",
+          "size": 1822479,
+          "status": "available",
+          "associations": null
+        }
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "token": "hGzSNxaSanETCK9W6eULzS--7xGk4mN8",
+      "userId": "jTjoIbDDlJD53iZRJY6s-",
+      "createdAt": "2025-11-14T01:01:22.753Z"
+    },
+    {
+      "token": "-9m11GyQKOEP_bNpOptjwaW8yZ-gPoV4",
+      "userId": "jTjoIbDDlJD53iZRJY6s-",
+      "createdAt": "2025-11-14T10:17:44.038Z"
+    }
+  ]
+}
