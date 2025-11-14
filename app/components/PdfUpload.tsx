@@ -917,9 +917,9 @@ export default function PdfUpload() {
                                 <button onClick={handleDownloadExcel} disabled={!extractionResult || downloadingExcel} className="btn btn-primary">
                                     {downloadingExcel ? 'Downloading...' : 'Download Excel'}
                                 </button>
-                                <button onClick={() => setShowEmailModal(true)} disabled={!extractionResult} className="btn btn-primary">
+                                {/* <button onClick={() => setShowEmailModal(true)} disabled={!extractionResult} className="btn btn-primary">
                                     Send via Email
-                                </button>
+                                </button> */}
                                 <button onClick={() => setCurrentStep('upload')} className="btn btn-secondary">
                                     Extract Another Document
                                 </button>
