@@ -52,7 +52,6 @@ export async function POST(request: NextRequest) {
             },
             body: heraldFormData,
         });
-
         if (!heraldResponse.ok) {
             const errorData = await heraldResponse.json().catch(() => ({}));
             console.error('Herald API error:', errorData);
